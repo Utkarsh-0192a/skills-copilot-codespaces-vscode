@@ -1,66 +1,47 @@
-// create a web server
-// create a route that listens for POST requests to /comments
-// when a POST request is received, parse the incoming form data
-// and save it to a file called comments.json
-// load the existing comments from comments.json and display them
-// create a form that allows users to submit new comments
-// load the existing comments from comments.json and display them
-
+//create a web seerver
+//importing the http module
 const http = require('http');
+
+//importing the fs module
 const fs = require('fs');
-const path = require('path');
-const qs = require('querystring');
-const { parse } = require('url');
 
+//importing the url module
+const url = require('url');
+
+//importing the querystring module
+const querystring = require('querystring');
+
+//creating a server
 const server = http.createServer((req, res) => {
-  const { method } = req;
-  const { pathname } = parse(req.url);
+    //parsing the url
+    const parsedUrl = url.parse(req.url);
 
-  if (method === 'GET' && pathname === '/comments') {
-    res.setHeader('Content-Type', 'text/html');
-    res.write('<html><body>');
-    res.write('<h1>Comments</h1>');
-    res.write('<ul>');
+    //parsing the query string
+    const parsedQuery = querystring.parse(parsedUrl.query);
 
-    fs.readFile('comments.json', 'utf8', (err, data) => {
-      if (err) {
-        res.write('<li>No comments yet</li>');
-        res.write('</ul>');
-        res.write('<form method="POST" action="/comments">');
-        res.write('<textarea name="comment"></textarea><br>');
-        res.write('<button type="submit">Submit</button>');
-        res.write('</form>');
-        res.write('</body></html>');
-        res.end();
-        return;
-      }
+    //checking if the request is a POST request
+    if (req.method === 'POST') {
+        let body = '';
 
-      const comments = JSON.parse(data);
-      comments.forEach((comment) => {
-        res.write(`<li>${comment}</li>`);
-      });
+        //reading the data from the request
+        req.on('data', chunk => {
+            body += chunk.toString();
+        });
 
-      res.write('</ul>');
-      res.write('<form method="POST" action="/comments">');
-      res.write('<textarea name="comment"></textarea><br>');
-      res.write('<button type="submit">Submit</button>');
-      res.write('</form>');
-      res.write('</body></html>');
-      res.end();
-    });
-  }
+        //sending a response to the request
+        req.on('end', () => {
+            res.end('Success');
+        });
+    } else {
+        //reading the file
+        fs.readFile('./index.html', (err, data) => {
+            //sending the file as a response
+            res.end(data);
+        });
+    }
+});
 
-  if (method === 'POST' && pathname === '/comments') {
-    const body = [];
-    req.on('data', (chunk) => {
-      body.push(chunk);
-    });
-
-    req.on('end', () => {
-      const comment = qs.parse(Buffer.concat(body).toString()).comment;
-
-      fs.readFile('comments.json', 'utf8', (err, data) => {
-        const comments = err ? [] : JSON.parse(data);
-        comments.push(comment);
-
-        fs.writeFile('comments.json', JSON
+//listening to the server
+server.listen(3000, () => {
+    console.log('Server is running on http://localhost:3000');
+});

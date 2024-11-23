@@ -1,47 +1,25 @@
-//create a web seerver
-//importing the http module
-const http = require('http');
+// Create web server
+// Create a web server that listens on port 3000 and serves the comments.json file. 
+// Use the fs.readFile function to read the contents of the file and send it back as the response. 
+// Remember to set the Content-Type header to application/json.
 
-//importing the fs module
+// Use the fs.readFile function to read the contents of the file and send it back as the response. 
+// Remember to set the Content-Type header to application/json.
+const http = require('http');
 const fs = require('fs');
 
-//importing the url module
-const url = require('url');
-
-//importing the querystring module
-const querystring = require('querystring');
-
-//creating a server
 const server = http.createServer((req, res) => {
-    //parsing the url
-    const parsedUrl = url.parse(req.url);
-
-    //parsing the query string
-    const parsedQuery = querystring.parse(parsedUrl.query);
-
-    //checking if the request is a POST request
-    if (req.method === 'POST') {
-        let body = '';
-
-        //reading the data from the request
-        req.on('data', chunk => {
-            body += chunk.toString();
-        });
-
-        //sending a response to the request
-        req.on('end', () => {
-            res.end('Success');
-        });
-    } else {
-        //reading the file
-        fs.readFile('./index.html', (err, data) => {
-            //sending the file as a response
+    res.setHeader('Content-Type', 'application/json');
+    fs.readFile('comments.json', 'utf8', (err, data) => {
+        if (err) {
+            res.statusCode = 500;
+            res.end('An error occurred');
+        } else {
             res.end(data);
-        });
-    }
+        }
+    });
 });
 
-//listening to the server
 server.listen(3000, () => {
-    console.log('Server is running on http://localhost:3000');
+    console.log('Server is running on port 3000');
 });
